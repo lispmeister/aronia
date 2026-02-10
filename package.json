@@ -1,0 +1,48 @@
+{
+  "name": "aronia",
+  "version": "0.1.0",
+  "description": "Realtime P2P agent communication protocol for Bare runtime",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "bare tests/protocol.test.js",
+    "test:watch": "bare tests/protocol.test.js --watch",
+    "example": "bare examples/simple-chat.js",
+    "example:chat": "bare examples/simple-chat.js",
+    "start": "bare cli.js",
+    "dev": "bare --hot examples/simple-chat.js",
+    "cli": "bare cli.js"
+  },
+  "dependencies": {
+    "hyperswarm": "^4.16.0",
+    "@hyperswarm/secret-stream": "^6.9.1",
+    "hypercore-crypto": "^3.6.1",
+    "bare-events": "^2.8.2",
+    "bare-buffer": "^3.4.2"
+  },
+  "devDependencies": {
+    "brittle": "^3.19.1"
+  },
+  "keywords": [
+    "p2p",
+    "agent",
+    "communication",
+    "realtime",
+    "mesh",
+    "hyperswarm",
+    "bare",
+    "holepunch"
+  ],
+  "license": "MIT",
+  "files": [
+    "src/",
+    "tests/",
+    "examples/",
+    "cli.js",
+    "README.md",
+    "PLAN.md"
+  ],
+  "engines": {
+    "bare": ">=1.0.0"
+  }
+}

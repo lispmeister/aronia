@@ -34,6 +34,7 @@ export class AroniaNode extends EventEmitter {
     this.introductionMaxAge = 24 * 60 * 60 * 1000;
 
     this.methods = new Map();
+    this._stopping = false;
 
     this.heartbeatInterval = opts.heartbeatInterval ?? 30000;
     this.heartbeatTimeout = opts.heartbeatTimeout ?? 90000;
@@ -47,8 +48,8 @@ export class AroniaNode extends EventEmitter {
     this.swarm.on("connection", this.handleConnection.bind(this));
     this.swarm.on("error", (err) => this.emit("error", err));
 
-    const topic = crypto.hash(Buffer.from(opts.topic));
-    this.swarm.join(topic, { server: true, client: true });
+    this._topic = crypto.hash(Buffer.from(opts.topic));
+    this._discovery = this.swarm.join(this._topic, { server: true, client: true });
 
     this.cleanupInterval = setInterval(() => {
       this.cleanupPendingIntroductions();
@@ -58,6 +59,8 @@ export class AroniaNode extends EventEmitter {
   }
 
   async handleConnection(rawSocket, info) {
+    if (this._stopping) return;
+
     try {
       const stream = rawSocket;
 
@@ -421,8 +424,15 @@ export class AroniaNode extends EventEmitter {
   }
 
   async stop() {
+    this._stopping = true;
+
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
+    }
+
+    // Leave the topic first to stop accepting new connections
+    if (this._discovery) {
+      await this._discovery.destroy();
     }
 
     for (const peer of this.peers.values()) {

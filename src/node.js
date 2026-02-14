@@ -61,22 +61,8 @@ export class AroniaNode extends EventEmitter {
     try {
       const stream = rawSocket;
 
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new AuthenticationError("Handshake timeout"));
-        }, 10000);
-
-        stream.once("handshake", () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-
-        stream.once("error", (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        });
-      });
-
+      // Hyperswarm only emits 'connection' after the Noise handshake completes,
+      // so remotePublicKey is always available here. No need to wait for 'handshake'.
       const remotePubkey = stream.remotePublicKey;
       if (!remotePubkey) {
         throw new AuthenticationError("No remote public key in handshake");

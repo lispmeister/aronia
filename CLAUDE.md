@@ -4,6 +4,50 @@ globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
 alwaysApply: false
 ---
 
+## File Editing with Hashline
+
+Use `hashline` for all file edits. Never edit files without reading them first.
+
+**Read a file:**
+```bash
+hashline read src/main.rs
+```
+Output includes `LINE:HASH` anchors (e.g., `1:a3|use std::io;`). For partial reads:
+```bash
+hashline read --start-line 10 --lines 20 src/main.rs
+```
+
+**Apply edits** (batch all edits to one file into a single call):
+```bash
+hashline apply << 'EOF'
+{
+  "path": "src/main.rs",
+  "edits": [
+    {"set_line": {"anchor": "4:01", "new_text": " println!(\"goodbye\");"}},
+    {"insert_after": {"anchor": "5:0e", "text": "fn helper() {\n todo!()\n}"}}
+  ]
+}
+EOF
+```
+
+Use `--emit-updated` to receive fresh anchors without re-reading.
+
+**Edit operations:**
+- `set_line`: Replace a single line using its anchor
+- `replace_lines`: Replace a range; use empty `"new_text"` to delete
+- `insert_after`: Add lines after an anchor
+- `replace`: Substring replacement (runs after anchor operations; errors on ambiguity)
+
+**Exit codes:** 0 = success, 1 = hash mismatch (stderr shows updated anchors—copy and retry), 2 = other errors.
+
+**On mismatch:** stderr displays the file with `>>>` marking changed lines and updated `LINE:HASH` references. Update only the affected anchor and retry without re-reading the entire file.
+
+**Rules:**
+- Never edit files without first reading them with `hashline read`
+- Batch all edits to one file into a single apply command
+- Prefer anchor operations over substring replacement
+- Never guess hashes—always read first
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
